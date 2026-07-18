@@ -32,6 +32,7 @@ public class ApiController {
     @Autowired private TransactionRepository txRepo;
     @Autowired private IdempotencyService idempotency;
     @Autowired private DashboardService DashboardService;
+    @Autowired private ExportService ExportService;
 
     // ------------------------------------------------------------------ key
 
@@ -191,4 +192,19 @@ public class ApiController {
                     tx.getReceiverVpa().toLowerCase().contains(name.toLowerCase()))
             .toList();
     }
+    @GetMapping("/transactions/export")
+public ResponseEntity<String> exportTransactions() {
+
+    return ResponseEntity.ok()
+            .header(
+                    "Content-Disposition",
+                    "attachment; filename=transactions.csv"
+            )
+            .header(
+                    "Content-Type",
+                    "text/csv"
+            )
+            .body(ExportService.exportTransactionsAsCsv());
+
+}
 }
