@@ -6,6 +6,7 @@ import com.demo.upimesh.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.demo.upimesh.dto.DashboardStats;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -30,6 +31,7 @@ public class ApiController {
     @Autowired private AccountRepository accountRepo;
     @Autowired private TransactionRepository txRepo;
     @Autowired private IdempotencyService idempotency;
+    @Autowired private DashboardService DashboardService;
 
     // ------------------------------------------------------------------ key
 
@@ -172,6 +174,11 @@ public class ApiController {
     @GetMapping("/transactions")
     public List<Transaction> listTransactions() {
         return txRepo.findTop20ByOrderByIdDesc();
+    }
+
+    @GetMapping("/stats")
+    public DashboardStats getDashboardStats() {
+        return DashboardService.getDashboardStats();
     }
 
     @GetMapping("/transactions/search")
