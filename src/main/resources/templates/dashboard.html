@@ -44,10 +44,27 @@ button:hover{background:#1d4ed8}
 </header>
 
 <div class="cards">
-<div class="card"><h3>Total Transactions</h3><h2 id="totalTx">0</h2></div>
-<div class="card"><h3>Total Amount</h3><h2 id="totalAmount">₹0</h2></div>
-<div class="card"><h3>Accounts</h3><h2 id="totalAccounts">0</h2></div>
-<div class="card"><h3>Success Rate</h3><h2>100%</h2></div>
+
+    <div class="card">
+        <h3>Total Transactions</h3>
+        <h2 id="totalTx">0</h2>
+    </div>
+
+    <div class="card">
+        <h3>Total Amount</h3>
+        <h2 id="totalAmount">₹0</h2>
+    </div>
+
+    <div class="card">
+        <h3>Average Transaction</h3>
+        <h2 id="avgTransaction">₹0</h2>
+    </div>
+
+    <div class="card">
+        <h3>Success Rate</h3>
+        <h2 id="successRate">0%</h2>
+    </div>
+
 </div>
 
 <div class="section">
@@ -61,6 +78,7 @@ button:hover{background:#1d4ed8}
 <button onclick="flushBridges()">Upload</button>
 <button onclick="resetMesh()">Reset</button>
 </div>
+
 
 <div class="grid">
 <div class="section">
@@ -77,19 +95,101 @@ button:hover{background:#1d4ed8}
 </div>
 </div>
 
+<div class="section">
+
+    <h2>📈 Transaction Analytics</h2>
+
+    <canvas id="transactionChart" height="90"></canvas>
+
 </div>
 
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    let transactionChart;
 function log(t){document.getElementById("log").innerHTML=new Date().toLocaleTimeString()+" - "+t+"<br>"+document.getElementById("log").innerHTML;}
 async function refresh(){
+const stats = await fetch('/api/stats').then(r => r.json());
 const txs=await fetch('/api/transactions').then(r=>r.json());
+const labels = txs.map(t => "TX-" + t.id);
+const amounts = txs.map(t => parseFloat(t.amount));
+
+if (transactionChart) {
+    transactionChart.destroy();
+}
+
+const ctx = document.getElementById("transactionChart");
+
+transactionChart = new Chart(ctx, {
+
+    type: "bar",
+
+    data: {
+
+        labels: labels,
+
+        datasets: [{
+
+            label: "Transaction Amount",
+
+            data: amounts,
+
+            borderRadius: 8
+
+        }]
+
+    },
+
+    options: {
+
+        responsive: true,
+
+        plugins: {
+
+            legend: {
+
+                display: false
+
+            }
+
+        },
+
+        scales: {
+
+            y: {
+
+                beginAtZero: true
+
+            }
+
+        }
+
+    }
+
+});
 const acc=await fetch('/api/accounts').then(r=>r.json());
 
-document.getElementById("totalTx").innerText=txs.length;
-document.getElementById("totalAccounts").innerText=acc.length;
-let total=0;
-txs.forEach(t=>total+=parseFloat(t.amount));
-document.getElementById("totalAmount").innerText="₹"+total.toFixed(2);
+document.getElementById("totalTx").innerText =
+    stats.totalTransactions;
+
+document.getElementById("totalAmount").innerText =
+    "₹" + parseFloat(stats.totalAmount).toFixed(2);
+
+document.getElementById("avgTransaction").innerText =
+    "₹" + parseFloat(stats.averageTransaction).toFixed(2);
+
+let successRate = 0;
+
+if(stats.totalTransactions > 0){
+
+    successRate =
+        (stats.successfulTransactions /
+        stats.totalTransactions) * 100;
+
+}
+
+document.getElementById("successRate").innerText =
+    successRate.toFixed(1) + "%";
 
 document.querySelector("#tx-table tbody").innerHTML=txs.map(t=>`
 <tr>
@@ -115,8 +215,19 @@ refresh();
 async function gossip(){await fetch('/api/mesh/gossip',{method:'POST'});log("Gossip completed");refresh();}
 async function flushBridges(){await fetch('/api/mesh/flush',{method:'POST'});log("Bridge upload complete");refresh();}
 async function resetMesh(){await fetch('/api/mesh/reset',{method:'POST'});log("Mesh reset");refresh();}
+
 refresh();
-setInterval(refresh,3000);
+
+// Refresh only if the user is near the top
+setInterval(() => {
+
+    if(window.scrollY < 100){
+        refresh();
+    }
+
+},3000);
+
 </script>
+
 </body>
 </html>
