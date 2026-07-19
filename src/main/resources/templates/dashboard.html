@@ -77,6 +77,8 @@ button:hover{background:#1d4ed8}
 <button onclick="gossip()">Gossip</button>
 <button onclick="flushBridges()">Upload</button>
 <button onclick="resetMesh()">Reset</button>
+<button onclick="downloadCsv()">📥 Export CSV</button>
+<button onclick="downloadPdf()">📄 Generate Report</button>
 </div>
 
 
@@ -216,6 +218,16 @@ async function gossip(){await fetch('/api/mesh/gossip',{method:'POST'});log("Gos
 async function flushBridges(){await fetch('/api/mesh/flush',{method:'POST'});log("Bridge upload complete");refresh();}
 async function resetMesh(){await fetch('/api/mesh/reset',{method:'POST'});log("Mesh reset");refresh();}
 
+function downloadCsv(){
+
+    window.location.href="/api/transactions/export";
+
+}
+function downloadPdf(){
+
+    window.location.href="/api/report/pdf";
+
+}
 refresh();
 
 // Refresh only if the user is near the top

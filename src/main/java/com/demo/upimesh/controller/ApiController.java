@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.demo.upimesh.dto.DashboardStats;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -33,6 +35,7 @@ public class ApiController {
     @Autowired private IdempotencyService idempotency;
     @Autowired private DashboardService DashboardService;
     @Autowired private ExportService ExportService;
+    @Autowired private PdfReportService PdfReportService;
 
     // ------------------------------------------------------------------ key
 
@@ -207,4 +210,24 @@ public ResponseEntity<String> exportTransactions() {
             .body(ExportService.exportTransactionsAsCsv());
 
 }
+
+@GetMapping("/report/pdf")
+public ResponseEntity<byte[]> DownloadPdf() throws Exception {
+
+    byte[] pdf = PdfReportService.generateReport();
+
+    return ResponseEntity.ok()
+            .header(
+                    HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment; filename=MeshPay_Report.pdf")
+            .contentType(MediaType.APPLICATION_PDF)
+            .body(pdf);
+}
+
+
+@GetMapping("/testpdf")
+public String testPdf() {
+    return "PDF endpoint reached";
+}
+
 }
