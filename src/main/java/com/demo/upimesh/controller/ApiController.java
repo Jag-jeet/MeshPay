@@ -225,9 +225,5 @@ public ResponseEntity<byte[]> DownloadPdf() throws Exception {
 }
 
 
-@GetMapping("/testpdf")
-public String testPdf() {
-    return "PDF endpoint reached";
-}
 
 }
